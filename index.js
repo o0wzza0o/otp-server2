@@ -1,9 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const qrcode = require("qrcode-terminal");
-const puppeteer = require("puppeteer");
-const fs = require("fs");
-const path = require("path");
 
 const {
   Client,
@@ -17,36 +14,9 @@ app.use(express.json());
 
 const otpStore = {};
 
-// ================= CHROME PATH =================
-
-const chromeBasePath = "/opt/render/project/chrome/chrome";
-
-let chromePath;
-
-try {
-  const chromeFolder = fs
-    .readdirSync(chromeBasePath)
-    .find(folder => folder.startsWith("linux-"));
-
-  chromePath = path.join(
-    chromeBasePath,
-    chromeFolder,
-    "chrome-linux64",
-    "chrome"
-  );
-
-  console.log("Chrome Path:", chromePath);
-
-} catch (err) {
-  console.log("Chrome path error:", err);
-}
-
-// ================= WHATSAPP CLIENT =================
-
 const client = new Client({
   puppeteer: {
     headless: true,
-    executablePath: chromePath,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -65,8 +35,6 @@ const client = new Client({
       "https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html",
   }
 });
-
-// ================= EVENTS =================
 
 client.on("qr", qr => {
 
@@ -89,11 +57,7 @@ client.on("disconnected", reason => {
   console.log("WhatsApp Disconnected:", reason);
 });
 
-// ================= INITIALIZE =================
-
 client.initialize();
-
-// ================= SEND OTP =================
 
 app.post("/send-otp", async (req, res) => {
 
@@ -103,7 +67,6 @@ app.post("/send-otp", async (req, res) => {
 
     let formattedPhone = phone.replace(/\D/g, '');
 
-    // تحويل الرقم المصري تلقائي
     if (
       formattedPhone.startsWith('01') &&
       formattedPhone.length === 11
@@ -118,10 +81,6 @@ app.post("/send-otp", async (req, res) => {
         message: "Invalid phone number."
       });
     }
-
-    console.log(
-      `[DEBUG] Sending OTP to ${formattedPhone}@c.us`
-    );
 
     const otp = Math.floor(
       100000 + Math.random() * 900000
@@ -139,11 +98,6 @@ app.post("/send-otp", async (req, res) => {
         );
 
     } catch (error) {
-
-      console.log(
-        "Validation Error:",
-        error.message
-      );
 
       return res.status(400).json({
         success: false,
@@ -182,8 +136,6 @@ app.post("/send-otp", async (req, res) => {
   }
 });
 
-// ================= VERIFY OTP =================
-
 app.post("/verify-otp", (req, res) => {
 
   const { phone, otp } = req.body;
@@ -214,13 +166,9 @@ app.post("/verify-otp", (req, res) => {
   });
 });
 
-// ================= TEST ROUTE =================
-
 app.get("/", (req, res) => {
   res.send("Server Working");
 });
-
-// ================= START SERVER =================
 
 const PORT = process.env.PORT || 3000;
 
