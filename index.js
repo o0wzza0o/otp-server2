@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const qrcode = require("qrcode-terminal");
-
+const puppeteer = require("puppeteer");
 const {
   Client,
   LocalAuth
