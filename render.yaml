@@ -2,7 +2,9 @@ services:
   - type: web
     name: otp-server2
     env: node
+
     buildCommand: |
       npm install
-      npx puppeteer browsers install chrome
+      npx puppeteer browsers install chrome --path /opt/render/project/chrome
+
     startCommand: node index.js
